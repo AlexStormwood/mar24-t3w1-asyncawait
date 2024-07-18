@@ -1,3 +1,4 @@
+import { addPokemonToCaughtStorage } from "./caughtPokemonStorage.js";
 import { getMultiplePokemon, getOnePokemon } from "./encounterSystem.js";
 
 
@@ -10,7 +11,7 @@ encounterOneButton.addEventListener('click', async () => {
 	result = [result];
 	localStorage.setItem("wildPokemon", JSON.stringify(result));
 
-	renderData();
+	updateScreen();
 	// getOnePokemon().then(data => console.log(data));
 })
 
@@ -19,10 +20,10 @@ encounterSixButton.addEventListener('click', async () => {
 	console.log(result);
 	localStorage.setItem("wildPokemon", JSON.stringify(result));
 
-	renderData();
+	updateScreen();
 })
 
-function renderData(){
+function renderWildEncounterData(){
 	// Retrieve data from local storage
 	let pokemonData = localStorage.getItem("wildPokemon");
 
@@ -45,7 +46,35 @@ function renderData(){
 	
 }
 
-function buildPokemonDisplayElement(pokemonData){
+function renderCaughtPokemonData(){
+	// Retrieve data from local storage
+	let pokemonData = localStorage.getItem("savedPokemon");
+
+	console.log(pokemonData);
+	console.log(typeof(pokemonData));
+
+	pokemonData = JSON.parse(pokemonData);
+
+	if (!pokemonData) return;
+
+	// If item is falsey, it removes itself from the array
+	pokemonData = pokemonData.filter(item => item);
+
+	// Reference to reuse
+	let caughtPokemonContainer = document.getElementById("pokemon-caught");
+	caughtPokemonContainer.innerText = "";
+
+	pokemonData.forEach(pokemon => {
+		// Build HTML elements to display the data 
+		let newElement = buildPokemonDisplayElement(pokemon, true);
+
+		// Insert the new HTML elements into the current page 
+		caughtPokemonContainer.appendChild(newElement);
+	});
+	
+}
+
+function buildPokemonDisplayElement(pokemonData, isCaught = false){
 	if (!pokemonData){
 		return;
 	}
@@ -57,11 +86,25 @@ function buildPokemonDisplayElement(pokemonData){
 	pokemonContainer.appendChild(pokemonHeading);
 
 	let pokemonImage = document.createElement("img");
-
-	console.log(pokemonData.sprites);
-
 	pokemonImage.src = pokemonData.sprites.front_default;
 	pokemonContainer.appendChild(pokemonImage);
 
+	if (!isCaught){
+		let captureButton = document.createElement("button");
+		captureButton.addEventListener("click", () => {
+			addPokemonToCaughtStorage(pokemonData);
+			updateScreen();
+		});
+		captureButton.innerText = "Capture " + pokemonData.name;
+		pokemonContainer.appendChild(captureButton);
+	}
+	
+
 	return pokemonContainer;
+}
+
+
+function updateScreen(){
+	renderWildEncounterData();
+	renderCaughtPokemonData();
 }

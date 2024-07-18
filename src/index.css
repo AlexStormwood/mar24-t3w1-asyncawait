@@ -1,0 +1,8 @@
+
+#app-flex-container {
+	display: flex;
+
+	div {
+		width: 50%;
+	}
+}
